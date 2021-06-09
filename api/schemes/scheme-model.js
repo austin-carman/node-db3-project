@@ -1,8 +1,13 @@
-function find() { // EXERCISE A
-  /*
-    1A- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`.
-    What happens if we change from a LEFT join to an INNER join?
+const db = require('../../data/db-config');
 
+function find() {
+  return db.select('sc.*') // what is the short hand similar to db('schemes as sc')... how to include column names
+    .from('schemes as sc')
+    .count('st.step_id as number_of_steps')
+    .leftJoin('steps as st', 'sc.scheme_id', '=', 'st.scheme_id')
+    .groupBy('sc.scheme_id')
+    .orderBy('sc.scheme_id');
+  /*
       SELECT
           sc.*,
           count(st.step_id) as number_of_steps
@@ -11,16 +16,42 @@ function find() { // EXERCISE A
           ON sc.scheme_id = st.scheme_id
       GROUP BY sc.scheme_id
       ORDER BY sc.scheme_id ASC;
-
-    2A- When you have a grasp on the query go ahead and build it in Knex.
-    Return from this function the resulting dataset.
   */
 }
 
-function findById(scheme_id) { // EXERCISE B
-  /*
-    1B- Study the SQL query below running it in SQLite Studio against `data/schemes.db3`:
+async function findById(scheme_id) {
+  console.log('findById model');
+  const scheme = await db.select('sc.scheme_name', 'st.*')
+    .from('schemes as sc')
+    .leftJoin('steps as st', 'sc.scheme_id', '=', 'st.scheme_id')
+    .where('sc.scheme_id', scheme_id)
+    .orderBy('st.step_number');
+    
+    let organizedScheme = {
+      scheme_id: '',
+      scheme_name: '',
+      steps: []
+    }
 
+    const test = scheme.map(singleScheme => {
+      return {
+        ...organizedScheme, 
+        scheme_id: singleScheme.scheme_id,
+        scheme_name: singleScheme.scheme_name,
+        steps: [
+          ...organizedScheme.steps, 
+          {
+            step_id: singleScheme.step_id,
+            step_number: singleScheme.step_number,
+            instructions: singleScheme.instructions
+          }
+        ]
+      }
+    })
+
+    return test;
+
+  /*
       SELECT
           sc.scheme_name,
           st.*
@@ -29,30 +60,6 @@ function findById(scheme_id) { // EXERCISE B
           ON sc.scheme_id = st.scheme_id
       WHERE sc.scheme_id = 1
       ORDER BY st.step_number ASC;
-
-    2B- When you have a grasp on the query go ahead and build it in Knex
-    making it parametric: instead of a literal `1` you should use `scheme_id`.
-
-    3B- Test in Postman and see that the resulting data does not look like a scheme,
-    but more like an array of steps each including scheme information:
-
-      [
-        {
-          "scheme_id": 1,
-          "scheme_name": "World Domination",
-          "step_id": 2,
-          "step_number": 1,
-          "instructions": "solve prime number theory"
-        },
-        {
-          "scheme_id": 1,
-          "scheme_name": "World Domination",
-          "step_id": 1,
-          "step_number": 2,
-          "instructions": "crack cyber security"
-        },
-        // etc
-      ]
 
     4B- Using the array obtained and vanilla JavaScript, create an object with
     the structure below, for the case _when steps exist_ for a given `scheme_id`:
