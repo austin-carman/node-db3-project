@@ -52,8 +52,11 @@ async function add(scheme) { // EXERCISE D
   */
 }
 
-function addStep(scheme_id, step) { 
+async function addStep(scheme_id, step) { 
+  const newStep = {...step, scheme_id: scheme_id};
+  await db('steps').insert(newStep);
 
+  return findSteps(scheme_id);
 
 
   /*
