@@ -16,21 +16,46 @@ async function findById(scheme_id) {
     .where('sc.scheme_id', scheme_id)
     .orderBy('st.step_number');
 
-    const schemeSteps = scheme.map(singleScheme => {
-        return {
-          step_id: singleScheme.step_id,
-          step_number: singleScheme.step_number,
-          instructions: singleScheme.instructions
-        }
-    });
-
-    const organizedScheme = {
+    const result = {
       scheme_id: scheme[0].scheme_id,
       scheme_name: scheme[0].scheme_name,
-      steps: schemeSteps[0].step_id == null ? [] : schemeSteps,
-    };
+      steps: [],
+    }
 
-    return organizedScheme;
+    scheme.map(item => {
+      if (item.step_id) {
+        result.steps.push({
+          step_id: item.step_id, 
+          step_number: item.step_number, 
+          instructions: item.instructions
+        })
+      } else {
+        return result;
+      }
+    })
+
+    return result;
+  // const scheme = await db.select('sc.scheme_name', 'st.*')
+  //   .from('schemes as sc')
+  //   .leftJoin('steps as st', 'sc.scheme_id', '=', 'st.scheme_id')
+  //   .where('sc.scheme_id', scheme_id)
+  //   .orderBy('st.step_number');
+
+  //   const schemeSteps = scheme.map(singleScheme => {
+  //       return {
+  //         step_id: singleScheme.step_id,
+  //         step_number: singleScheme.step_number,
+  //         instructions: singleScheme.instructions
+  //       }
+  //   });
+
+  //   const organizedScheme = {
+  //     scheme_id: scheme[0].scheme_id,
+  //     scheme_name: scheme[0].scheme_name,
+  //     steps: schemeSteps[0].step_id == null ? [] : schemeSteps,
+  //   };
+
+  //   return organizedScheme;
 }
 
 async function findSteps(scheme_id) {
