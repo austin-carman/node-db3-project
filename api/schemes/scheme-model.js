@@ -47,7 +47,7 @@ async function add(scheme) { // EXERCISE D
   const [id] = await db('schemes').insert(scheme);
 
   return db('schemes').where('scheme_id', id).first();
-  /*
+  /*P
     1D- This function creates a new scheme and resolves to _the newly created scheme_.
   */
 }
